@@ -13,11 +13,13 @@
 		"@cloudflare/puppeteer": "^0.0.14",
 		"@cloudflare/vitest-pool-workers": "^0.6.4",
 		"@cloudflare/workers-types": "^4.20250124.3",
+		"@types/nodemailer": "^6.4.17",
 		"typescript": "^5.5.2",
 		"vitest": "2.1.8",
 		"wrangler": "^3.105.1"
 	},
 	"dependencies": {
-		"puppeteer-cmp-clicker": "^1.0.3"
+		"puppeteer-cmp-clicker": "^1.0.3",
+		"resend": "^4.1.1"
 	}
 }
