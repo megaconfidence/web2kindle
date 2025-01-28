@@ -13,7 +13,14 @@
 	},
 	"browser": {
 		"binding": "BROWSER"
-	}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "PDF_CACHE",
+			"preview_id": "719ab3523ffe421992c5299a1abd2c35",
+			"id": "a8d17faea8394c9fa0673772883fca2f"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
