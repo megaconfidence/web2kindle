@@ -17,7 +17,7 @@ export class BrowserController extends DurableObject {
 		this.keptAliveInSeconds = 0;
 		this.storage = this.ctx.storage;
 	}
-	async render(url: string): Promise<ArrayBuffer> {
+	async renderAndCache(url: string) {
 		//reuse cached browser connection
 		if (!this.browser || !this.browser.isConnected()) {
 			console.log(`browser controller: starting new instance`);
@@ -43,6 +43,10 @@ export class BrowserController extends DurableObject {
 		});
 		await page.close();
 
+		await this.env.PDF_CACHE.put(url, pdf, {
+			expirationTtl: 60 * 60 * 24 * 7,
+		});
+
 		//reset keptAlive after performing tasks
 		this.keptAliveInSeconds = 0;
 
@@ -52,8 +56,6 @@ export class BrowserController extends DurableObject {
 			console.log(`browser controller: setting alarm`);
 			await this.storage.setAlarm(Date.now() + 10 * 1000);
 		}
-
-		return pdf;
 	}
 	async alarm() {
 		this.keptAliveInSeconds += 10;

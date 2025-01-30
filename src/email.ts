@@ -7,7 +7,7 @@ interface EmailStatus {
 
 export default async function send(env: Env, email: string, pdf: ArrayBuffer, url: string): Promise<EmailStatus> {
 	const resend = new Resend(env.RESEND_KEY);
-	return await resend.emails.send({
+	return resend.emails.send({
 		from: env.FROM_EMAIL,
 		to: email,
 		subject: 'New Webpage Order Just Got Delivered! 🚚',

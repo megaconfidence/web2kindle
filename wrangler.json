@@ -34,8 +34,14 @@
 			"tag": "v1",
 			"new_classes": ["BrowserController"]
 		}
+	],
+	"workflows": [
+		{
+			"name": "web2kindle",
+			"binding": "WORKFLOW",
+			"class_name": "Workflow"
+		}
 	]
-
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

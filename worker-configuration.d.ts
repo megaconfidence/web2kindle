@@ -6,4 +6,5 @@ interface Env {
 	FROM_EMAIL: string;
 	BROWSER_CONTROLLER: BrowserController;
 	BROWSER: Fetcher;
+	WORKFLOW: Workflow;
 }
