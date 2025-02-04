@@ -8,6 +8,10 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2025-01-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./public"
+	},
 	"observability": {
 		"enabled": true
 	},

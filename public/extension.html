@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Web2Kindle</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+	</head>
+	<body class="bg-gray-50">
+		<div class="max-w-[600px] mx-auto p-4">
+			<!-- Header -->
+			<div class="flex items-center space-x-2 mb-6">
+				<svg class="w-6 h-6" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+					<rect x="20" y="10" width="60" height="80" rx="4" fill="#4F46E5" />
+					<rect x="25" y="15" width="50" height="65" rx="2" fill="#ffffff" />
+					<circle cx="50" cy="40" r="15" fill="none" stroke="#4F46E5" stroke-width="3" />
+					<path d="M35 40 Q50 25 65 40 Q50 55 35 40" fill="none" stroke="#4F46E5" stroke-width="2" />
+					<path d="M40 33 Q50 48 60 33" fill="none" stroke="#4F46E5" stroke-width="2" />
+					<path d="M50 55 L50 70 L60 65 L50 70 L40 65" fill="#4F46E5" stroke="#4F46E5" stroke-width="2" />
+				</svg>
+				<h1 class="text-lg font-semibold text-gray-900">Web2Kindle</h1>
+			</div>
+
+			<!-- Form -->
+			<form id="sendToKindleForm" class="space-y-4">
+				<div>
+					<label for="url" class="block text-sm font-medium text-gray-700 mb-1">Current Page URL</label>
+					<input
+						type="url"
+						id="url"
+						required
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+					/>
+				</div>
+
+				<div>
+					<label for="kindle-email" class="block text-sm font-medium text-gray-700 mb-1">Kindle Email</label>
+					<input
+						type="email"
+						id="kindle-email"
+						required
+						placeholder="your-kindle@kindle.com"
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm mb-2"
+					/>
+					<div class="bg-blue-50 p-3 rounded-md">
+						<p class="text-xs text-blue-800">
+							⚠️ First time setup: Add confidence@megaconfidence.me to your
+							<a
+								href="https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H"
+								class="text-blue-600 hover:text-blue-800 underline"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								Kindle approved email list
+							</a>
+						</p>
+					</div>
+				</div>
+
+				<button
+					type="submit"
+					class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm font-medium"
+				>
+					Send to Kindle
+				</button>
+			</form>
+
+			<!-- Status Message -->
+			<div id="message" class="mt-4 text-center hidden">
+				<p id="messageText" class="text-sm"></p>
+			</div>
+
+			<!-- Footer -->
+			<div class="mt-4 pt-4 border-t border-gray-200">
+				<div class="flex justify-between items-center text-xs text-gray-500">
+					<a href="https://github.com/megaconfidence/web2kindle" target="_blank" class="hover:text-gray-700"> Open Source on GitHub </a>
+					<span>v1.0.0</span>
+				</div>
+			</div>
+		</div>
+		<script src="extension.js"></script>
+	</body>
+</html>

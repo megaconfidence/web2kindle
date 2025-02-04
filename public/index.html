@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Send to Kindle - Read Web Content on Your Kindle</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+		<style>
+			.gradient-bg {
+				background: linear-gradient(135deg, #f6f9fc 0%, #eef2f7 100%);
+			}
+			.hero-pattern {
+				background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+			}
+		</style>
+	</head>
+	<body class="min-h-screen gradient-bg hero-pattern">
+		<!-- Navigation -->
+		<nav class="bg-white shadow">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div class="flex justify-between h-16">
+					<div class="flex items-center">
+						<svg class="w-6 h-6" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+							<rect x="20" y="10" width="60" height="80" rx="4" fill="#4F46E5" />
+							<rect x="25" y="15" width="50" height="65" rx="2" fill="#ffffff" />
+							<circle cx="50" cy="40" r="15" fill="none" stroke="#4F46E5" stroke-width="3" />
+							<path d="M35 40 Q50 25 65 40 Q50 55 35 40" fill="none" stroke="#4F46E5" stroke-width="2" />
+							<path d="M40 33 Q50 48 60 33" fill="none" stroke="#4F46E5" stroke-width="2" />
+							<path d="M50 55 L50 70 L60 65 L50 70 L40 65" fill="#4F46E5" stroke="#4F46E5" stroke-width="2" />
+						</svg>
+						<h1 class="text-lg font-semibold text-gray-900">Web2Kindle</h1>
+					</div>
+					<div class="flex items-center space-x-4">
+						<a href="#how-it-works" class="text-gray-600 hover:text-gray-900">How it Works</a>
+						<a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Hero Section -->
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+			<div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+				<!-- Left Column - Content -->
+				<div class="mb-12 lg:mb-0">
+					<h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl mb-6">
+						Send Web Articles <br />
+						<span class="text-indigo-600">Directly to Your Kindle</span>
+					</h1>
+					<p class="text-xl text-gray-600 mb-8">
+						Send any webpage directly to your Kindle for a distraction-free reading experience. Free and open-source forever.
+					</p>
+					<div class="flex space-x-4 mb-8">
+						<div class="flex items-center">
+							<svg class="h-6 w-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+							</svg>
+							<span class="ml-2">100% Free</span>
+						</div>
+						<div class="flex items-center">
+							<svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+							</svg>
+							<span class="ml-2 text-gray-600">One-Click Send</span>
+						</div>
+						<div class="flex items-center">
+							<svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+							</svg>
+							<span class="ml-2 text-gray-600">Clean Format</span>
+						</div>
+					</div>
+
+					<div class="flex items-center space-x-4">
+						<a
+							href="https://github.com/megaconfidence/web2kindle"
+							class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						>
+							<svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+								<path
+									fill-rule="evenodd"
+									d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+							View on GitHub
+						</a>
+						<a href="https://github.com/megaconfidence/web2kindle/stargazers" class="text-indigo-600 hover:text-indigo-200 transition">
+							Star us on GitHub ⭐
+						</a>
+					</div>
+				</div>
+
+				<!-- Right Column - Form -->
+				<div class="bg-white rounded-xl shadow-xl p-8">
+					<div class="mb-6">
+						<h2 class="text-2xl font-bold text-gray-900 mb-2">Send Article to Kindle</h2>
+						<p class="text-gray-600">Enter the article URL and your Kindle email below</p>
+					</div>
+
+					<form id="sendToKindleForm" class="space-y-4">
+						<div>
+							<label for="url" class="block text-sm font-medium text-gray-700 mb-1">Article URL</label>
+							<input
+								type="url"
+								id="url"
+								required
+								placeholder="https://example.com/article"
+								class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+							/>
+						</div>
+
+						<div>
+							<label for="kindle-email" class="block text-sm font-medium text-gray-700 mb-1">Kindle Email</label>
+							<input
+								type="email"
+								id="kindle-email"
+								required
+								placeholder="your-kindle@kindle.com"
+								class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+							/>
+							<div class="bg-blue-50 p-3 rounded-md">
+								<p class="text-xs text-blue-800">
+									⚠️ First time setup: Add confidence@megaconfidence.me to your
+									<a
+										href="https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H"
+										class="text-blue-600 hover:text-blue-800 underline"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										Kindle approved email list
+									</a>
+								</p>
+							</div>
+						</div>
+
+						<button
+							type="submit"
+							class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out font-medium"
+						>
+							Send to Kindle
+						</button>
+					</form>
+
+					<div id="message" class="mt-4 text-center hidden">
+						<p id="messageText" class="text-sm"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Features Section -->
+		<div id="features" class="bg-white py-16">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Why Choose Web2Kindle</h2>
+
+				<div class="grid md:grid-cols-3 gap-8">
+					<div class="text-center">
+						<div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+							<svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+							</svg>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Instant Delivery</h3>
+						<p class="text-gray-600">Articles are sent to your Kindle device in seconds</p>
+					</div>
+
+					<div class="text-center">
+						<div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+							<svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+								></path>
+							</svg>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Clean Format</h3>
+						<p class="text-gray-600">Articles are optimized for Kindle reading</p>
+					</div>
+
+					<div class="text-center">
+						<div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+							<svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+								></path>
+							</svg>
+						</div>
+						<h3 class="text-xl font-semibold mb-2">Easy to Use</h3>
+						<p class="text-gray-600">No apps or extensions needed</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- How It Works Section -->
+		<div id="how-it-works" class="py-16">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<h2 class="text-3xl font-bold text-center text-gray-900 mb-12">How It Works</h2>
+
+				<div class="grid md:grid-cols-3 gap-8">
+					<div class="relative">
+						<div class="flex items-center justify-center mb-4">
+							<span class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-semibold">1</span>
+						</div>
+						<h3 class="text-xl font-semibold text-center mb-2">Paste URL</h3>
+						<p class="text-gray-600 text-center">Copy the article URL you want to read</p>
+					</div>
+
+					<div class="relative">
+						<div class="flex items-center justify-center mb-4">
+							<span class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-semibold">2</span>
+						</div>
+						<h3 class="text-xl font-semibold text-center mb-2">Enter Email</h3>
+						<p class="text-gray-600 text-center">Add your Kindle email address</p>
+					</div>
+
+					<div class="relative">
+						<div class="flex items-center justify-center mb-4">
+							<span class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-semibold">3</span>
+						</div>
+						<h3 class="text-xl font-semibold text-center mb-2">Start Reading</h3>
+						<p class="text-gray-600 text-center">The article appears on your Kindle</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Footer -->
+		<footer class="bg-white">
+			<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+				<p class="text-center text-gray-500 text-sm">&copy; 2025 Web2Kindle. All rights reserved.</p>
+			</div>
+		</footer>
+
+		<script type="module">
+			document.getElementById('sendToKindleForm').addEventListener('submit', function (e) {
+				e.preventDefault();
+
+				const url = document.getElementById('url').value;
+				const kindleEmail = document.getElementById('kindle-email').value;
+				const messageDiv = document.getElementById('message');
+				const messageText = document.getElementById('messageText');
+
+				// Simulate sending request
+				messageDiv.classList.remove('hidden');
+				messageText.textContent = 'Processing...';
+				messageText.className = 'text-sm text-gray-600';
+
+				(async function () {
+					const response = await fetch('/send', { method: 'post', body: JSON.stringify({ url, email: kindleEmail }) });
+					console.log(response);
+					if (response.status === 200) {
+						messageText.textContent = 'Article successfully sent to your Kindle!';
+						messageText.className = 'text-sm text-green-600';
+					} else {
+						messageText.textContent = 'Could not send article to your Kindle';
+						messageText.className = 'text-sm text-red-600';
+					}
+				})();
+
+				// Clear message
+				setTimeout(() => {
+					messageDiv.classList.add('hidden');
+				}, 10000);
+			});
+		</script>
+	</body>
+</html>

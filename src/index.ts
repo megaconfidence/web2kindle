@@ -11,6 +11,9 @@ export { Workflow } from './workflow';
 
 export default {
 	async fetch(request, env): Promise<Response> {
+		if (new URL(request.url).pathname !== '/send') {
+			return new Response('invalid endpoint', { status: 400 });
+		}
 		let { url, email } = (await request.json()) as Data;
 
 		if (request.method !== 'POST' || !url || !email) {
