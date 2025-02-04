@@ -13,6 +13,6 @@ export default async function send(env: Env, email: string, pdf: ArrayBuffer, ur
 		to: email,
 		subject: 'New Webpage Order Just Got Delivered! 🚚',
 		text: `Hey there, here's your freshly baked webpage from web2kindle. Enjoy! \n\n Generated from ${url}`,
-		attachments: [{ content: Buffer.from(pdf), filename: slugify(url) }],
+		attachments: [{ content: Buffer.from(pdf), filename: slugify(url) + '.pdf' }],
 	});
 }
