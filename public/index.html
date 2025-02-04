@@ -117,11 +117,11 @@
 								id="kindle-email"
 								required
 								placeholder="your-kindle@kindle.com"
-								class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+								class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition mb-2"
 							/>
 							<div class="bg-blue-50 p-3 rounded-md">
 								<p class="text-xs text-blue-800">
-									⚠️ First time setup: Add confidence@megaconfidence.me to your
+									⚠️ First time setup: Add "@megaconfidence.me" to your
 									<a
 										href="https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H"
 										class="text-blue-600 hover:text-blue-800 underline"
@@ -254,9 +254,8 @@
 
 				(async function () {
 					const response = await fetch('/send', { method: 'post', body: JSON.stringify({ url, email: kindleEmail }) });
-					console.log(response);
 					if (response.status === 200) {
-						messageText.textContent = 'Article successfully sent to your Kindle!';
+						messageText.textContent = 'Article is being sent to your Kindle!';
 						messageText.className = 'text-sm text-green-600';
 					} else {
 						messageText.textContent = 'Could not send article to your Kindle';

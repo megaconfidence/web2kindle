@@ -6,21 +6,32 @@
 // ✅5. Keep remote browser alive with DO
 // 6. Can I use queues?
 
+import { z } from 'zod';
 export { BrowserController } from './browser';
 export { Workflow } from './workflow';
+
+const Data = z.object({
+	url: z.string().url(),
+	email: z.string().email(),
+});
 
 export default {
 	async fetch(request, env): Promise<Response> {
 		if (new URL(request.url).pathname !== '/send') {
 			return new Response('invalid endpoint', { status: 400 });
 		}
-		let { url, email } = (await request.json()) as Data;
 
+		const { success, data, error } = Data.safeParse(await request.json());
+		if (!success) {
+			console.error(error);
+			return new Response(error.issues[0].message, { status: 400 });
+		}
+
+		const { url, email } = data;
 		if (request.method !== 'POST' || !url || !email) {
 			return new Response('invalid request', { status: 400 });
 		}
 
-		url = new URL(url).toString(); //normalize
 		let workflow = await env.WORKFLOW.create({ params: { url, email } });
 
 		return Response.json({

@@ -29,9 +29,8 @@ document.getElementById('sendToKindleForm').addEventListener('submit', function 
 			method: 'post',
 			body: JSON.stringify({ url, email: kindleEmail }),
 		});
-		console.log(response);
 		if (response.status === 200) {
-			messageText.textContent = 'Article successfully sent to your Kindle!';
+			messageText.textContent = 'Article is being sent to your Kindle!';
 			messageText.className = 'text-sm text-green-600';
 		} else {
 			messageText.textContent = 'Could not send article to your Kindle';

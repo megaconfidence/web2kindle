@@ -1,8 +1,13 @@
 import send from './email';
 import { WorkflowEntrypoint, WorkflowStep, WorkflowEvent } from 'cloudflare:workers';
 
+type Payload = {
+	email: string;
+	url: string;
+};
+
 export class Workflow extends WorkflowEntrypoint<Env, Params> {
-	async run(event: WorkflowEvent<Data>, step: WorkflowStep) {
+	async run(event: WorkflowEvent<Payload>, step: WorkflowStep) {
 		const { url, email } = event.payload;
 		const isPdfCached = await step.do('check for pdf in cache', async () => {
 			const cache = await this.env.PDF_CACHE.list({ prefix: url });
