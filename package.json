@@ -19,6 +19,7 @@
 		"wrangler": "^3.105.1"
 	},
 	"dependencies": {
+		"@sindresorhus/slugify": "^2.2.1",
 		"puppeteer-cmp-clicker": "^1.0.3",
 		"resend": "^4.1.1",
 		"zod": "^3.24.1"
