@@ -22,6 +22,8 @@ export default {
 		}
 
 		const { success, data, error } = Data.safeParse(await request.json());
+		console.log(data);
+
 		if (!success) {
 			console.error(error);
 			return new Response(error.issues[0].message, { status: 400 });

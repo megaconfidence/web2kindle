@@ -15,10 +15,11 @@
 		"48": "images/icon-48.png",
 		"128": "images/icon-128.png"
 	},
-	"permissions": ["tabs"],
+	"permissions": ["tabs", "storage"],
+	"host_permissions": ["*://*/*"],
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "{4c33b41e-83a0-43d4-ab62-393e8f69fe5b}"
+			"id": "{d4cc2e4c-29b7-4efc-aaec-a69de72f9c32}"
 		}
 	}
 }

@@ -253,12 +253,23 @@
 				messageText.className = 'text-sm text-gray-600';
 
 				(async function () {
-					const response = await fetch('/send', { method: 'post', body: JSON.stringify({ url, email: kindleEmail }) });
-					if (response.status === 200) {
-						messageText.textContent = 'Article is being sent to your Kindle!';
-						messageText.className = 'text-sm text-green-600';
-					} else {
-						messageText.textContent = 'Could not send article to your Kindle';
+					try {
+						const response = await fetch('/send', {
+							method: 'post',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({ url, email: kindleEmail }),
+						});
+						if (response.status === 200) {
+							messageText.textContent = 'Article is being sent to your Kindle!';
+							messageText.className = 'text-sm text-green-600';
+						} else {
+							messageText.textContent = 'Could not send article to your Kindle';
+							messageText.className = 'text-sm text-red-600';
+						}
+					} catch (e) {
+						messageText.textContent = e.message;
 						messageText.className = 'text-sm text-red-600';
 					}
 				})();
