@@ -1,6 +1,7 @@
 const API_ENDPOINT = 'https://web2kindle.megaconfidence.me/send';
 // const API_ENDPOINT = 'http://localhost:8787/send';
 
+localStorage.setItem('foo', 'bar');
 const browser = window?.browser || window?.chrome;
 
 // Get current tab URL
