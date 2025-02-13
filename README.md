@@ -26,6 +26,10 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 - 🔒 No account required, no ads, no tracking
 - 💯 Free and open source forever
 
+## Architecture
+
+![Architecture](./images/arch.jpg)
+
 ## Installation 🔧
 
 1. Install from [Chrome Web Store](https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk) or [Firefox Addons](https://addons.mozilla.org/en-US/firefox/addon/web2kindle/)
