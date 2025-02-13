@@ -28,7 +28,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
 ## Architecture
 
-![Architecture](./images/arch.jpg)
+![Architecture](./images/arch.png)
 
 ## Installation 🔧
 
