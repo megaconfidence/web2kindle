@@ -20,9 +20,9 @@
 	},
 	"kv_namespaces": [
 		{
-			"binding": "PDF_CACHE",
-			"preview_id": "719ab3523ffe421992c5299a1abd2c35",
-			"id": "a8d17faea8394c9fa0673772883fca2f"
+			"binding": "ARTICLE_CACHE",
+			"preview_id": "6bf13148972e418f999a9c4905755709",
+			"id": "606efc9a67704eba877ed1dafbf4f1f9"
 		}
 	],
 	"durable_objects": {
