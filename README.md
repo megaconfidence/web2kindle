@@ -33,7 +33,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 ## Installation 🔧
 
 1. Install from [Chrome Web Store](https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk) or [Firefox Addons](https://addons.mozilla.org/en-US/firefox/addon/web2kindle/)
-2. Add `@megaconfidence.me` to your [Kindle Approved Email List](https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H)
+2. Add `confidence@megaconfidence.me` to your [Kindle Approved Email List](https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H)
 3. Click the extension icon on any webpage you want to read on your Kindle
 
 ## How It Works 🛠️
