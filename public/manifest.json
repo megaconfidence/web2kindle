@@ -1,6 +1,6 @@
 {
 	"name": "Web2Kindle",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Send web content to your Kindle device",
 	"manifest_version": 3,
 	"author": "Confidence Okoghenun",
