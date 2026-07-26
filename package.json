@@ -7,21 +7,25 @@
 		"dev": "wrangler dev --remote",
 		"start": "wrangler dev --remote",
 		"test": "vitest",
+		"typecheck": "tsc --noEmit",
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"@cloudflare/puppeteer": "^0.0.14",
-		"@cloudflare/vitest-pool-workers": "^0.6.4",
-		"@cloudflare/workers-types": "^4.20250124.3",
+		"@cloudflare/puppeteer": "^1.1.0",
+		"@cloudflare/vitest-pool-workers": "^0.18.8",
+		"@cloudflare/workers-types": "^5.20260726.1",
 		"@types/nodemailer": "^6.4.17",
 		"typescript": "^5.5.2",
-		"vitest": "2.1.8",
-		"wrangler": "^3.105.1"
+		"vitest": "^4.1.10",
+		"wrangler": "^4.114.0"
 	},
 	"dependencies": {
+		"@mozilla/readability": "^0.6.0",
 		"@sindresorhus/slugify": "^2.2.1",
+		"fflate": "^0.8.3",
+		"linkedom": "^0.18.13",
 		"puppeteer-cmp-clicker": "^1.0.3",
-		"resend": "^4.1.1",
+		"resend": "^6.18.0",
 		"zod": "^3.24.1"
 	}
 }

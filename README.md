@@ -1,10 +1,11 @@
 # Web2Kindle 📚
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/megaconfidence/web2kindle.svg)](https://github.com/megaconfidence/web2kindle/stargazers)
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/megaconfidence/web2kindle)
 
-Transform any web article into a beautifully formatted Kindle ebook with just one click. Web2Kindle is a free and open-source Chrome extension that sends web content directly to your Kindle device for distraction-free reading.
+Transform any web article into a clean, reflowable Kindle ebook with one click. Web2Kindle is a free and open-source Chrome and Firefox extension that sends web content directly to your Kindle for distraction-free reading.
 
 <a href="https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk" target="_blank">
   <img src="/public/images/chrome.webp" style="height:50px;" />
@@ -21,7 +22,8 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 ## Features ✨
 
 - 🚀 Lightning-fast delivery to any Kindle device
-- 📱 Clean, readable formatting optimized for Kindle screens
+- 📱 Reflowable EPUB formatting with adjustable Kindle typography
+- 📄 Optional PDF delivery when preserving the original layout matters
 - 🔄 One-click sending with automatic URL detection
 - 💾 Saves your Kindle email locally for convenience
 - 🔒 No account required, no ads, no tracking
@@ -40,9 +42,10 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 ## How It Works 🛠️
 
 1. The extension captures the current webpage URL
-2. Our server processes the content and formats it for Kindle
-3. The formatted document is sent to your Kindle email
-4. The article appears in your Kindle library within minutes
+2. Mozilla Readability extracts the article from the rendered page
+3. Our server creates a reflowable EPUB with embedded images, or an optional PDF
+4. The formatted document is sent to your Kindle email
+5. The article appears in your Kindle library within minutes
 
 ## Development 👨‍💻
 
@@ -78,12 +81,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## Privacy 🔒
 
-Web2Kindle respects your privacy:
-
-- No user data collection
-- No analytics or tracking
-- Email addresses stored locally only
-- Open source code for transparency
+Web2Kindle does not use analytics, tracking, or marketing profiles. The extension remembers your Kindle address only in local browser storage. When you send an article, its URL and destination address are processed by Cloudflare Workflows and Resend, and the generated document is cached for up to seven days to avoid rendering the same page repeatedly.
 
 ## License 📄
 
