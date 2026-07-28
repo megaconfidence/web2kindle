@@ -1,0 +1,31 @@
+package-lock.json
+  s_e741d16d2c6f14::t_26ff01bebfa69d 22,1274-1294,2370-2383,2770-2780,2922-2931,3280-3286,3531-3537,3614-3626,3692-3716,4205-4211,4316-4332
+package.json
+  s_e741d16d2c6f14::t_1167517b69e4f6 11,17
+test/epub.spec.ts
+  s_50ada7357c59b5::t_9405c6b3c48350 23-40,42,112-390,396-403
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c21d01404dd057d084ae8f6538c10ffd301b0efb",
+  "prompts": {},
+  "sessions": {
+    "s_50ada7357c59b5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0578f26f5ffeercSkcew6404BS",
+        "model": "claude-opus-5"
+      },
+      "human_author": "megaconfidence <cokoghenun@gmail.com>"
+    },
+    "s_e741d16d2c6f14": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0602808b1ffe4uYf01eIByiy2G",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "megaconfidence <cokoghenun@gmail.com>"
+    }
+  }
+}
