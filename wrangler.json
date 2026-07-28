@@ -15,6 +15,9 @@
 	"observability": {
 		"enabled": true
 	},
+	"secrets": {
+		"required": ["RESEND_KEY", "FROM_EMAIL"]
+	},
 	"browser": {
 		"binding": "BROWSER"
 	},

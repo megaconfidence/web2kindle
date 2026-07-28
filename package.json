@@ -8,12 +8,13 @@
 		"start": "wrangler dev --remote",
 		"test": "vitest",
 		"typecheck": "tsc --noEmit",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types --include-runtime false"
 	},
 	"devDependencies": {
 		"@cloudflare/puppeteer": "^1.1.0",
 		"@cloudflare/vitest-pool-workers": "^0.18.8",
 		"@cloudflare/workers-types": "^5.20260726.1",
+		"@likecoin/epubcheck-ts": "^0.6.2",
 		"@types/nodemailer": "^6.4.17",
 		"typescript": "^5.5.2",
 		"vitest": "^4.1.10",
@@ -24,7 +25,6 @@
 		"@sindresorhus/slugify": "^2.2.1",
 		"fflate": "^0.8.3",
 		"linkedom": "^0.18.13",
-		"puppeteer-cmp-clicker": "^1.0.3",
 		"resend": "^6.18.0",
 		"zod": "^3.24.1"
 	}

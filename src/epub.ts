@@ -4,12 +4,26 @@ import { DOMParser } from 'linkedom/worker';
 
 const MAX_IMAGES = 12;
 const MAX_IMAGE_ATTEMPTS = 36;
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_ATTEMPTS_PER_ELEMENT = 4;
+export const MAX_EMBEDDED_IMAGE_BYTES = 2 * 1024 * 1024;
 const MAX_TOTAL_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_ARTICLE_CHARS = 3 * 1024 * 1024;
 const MAX_DOM_ELEMENTS = 100_000;
+const MAX_RESPONSIVE_IMAGE_WIDTH = 1600;
+const MAX_LEAD_IMAGE_SCAN = 200;
+const MAX_LEAD_IMAGE_CANDIDATES = 20;
+const MIN_LEAD_IMAGE_DIMENSION = 200;
+// Regions that hold promos, related posts, and site furniture rather than the image that opens the article.
+const LEAD_IMAGE_EXCLUDED_REGIONS = 'nav, aside, footer, form';
+// Matched as a whole word so that "iconic" or "logotype" cannot disqualify a real lead image. "placeholder"
+// is deliberately absent: sites name the real image things like "image-placeholder-media", and genuine
+// placeholders are already excluded by aria-hidden or by having no usable source.
+const NON_CONTENT_IMAGE = /(?:^|[-_\s])(?:avatar|logo|icon|badge|sprite|emoji|tracking|pixel|spinner|thumbnail)(?:$|[-_\s])/i;
 export const MAX_HTML_CHARS = 6 * 1024 * 1024;
 export const MAX_EPUB_BYTES = 20 * 1024 * 1024;
+export const MAX_DATA_IMAGE_PAYLOAD_CHARS = Math.ceil((MAX_EMBEDDED_IMAGE_BYTES * 4) / 3) + 4;
+
+const DATA_IMAGE_MEDIA_TYPES = new Set(['image/gif', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 
 const ALLOWED_TAGS = new Set([
 	'a',
@@ -127,9 +141,14 @@ interface EpubOptions {
 
 interface EmbeddedImage {
 	data: Uint8Array;
-	extension: 'gif' | 'jpg' | 'png';
-	mediaType: 'image/gif' | 'image/jpeg' | 'image/png';
+	extension: 'gif' | 'jpg' | 'png' | 'webp';
+	mediaType: 'image/gif' | 'image/jpeg' | 'image/png' | 'image/webp';
 	path: string;
+}
+
+interface EmbeddedImages {
+	assets: EmbeddedImage[];
+	byElement: WeakMap<SerializableNode, EmbeddedImage>;
 }
 
 interface SerializableNode {
@@ -137,11 +156,15 @@ interface SerializableNode {
 	localName?: string;
 	nodeType: number;
 	nodeValue?: string | null;
+	parentElement?: SerializableNode | null;
+	closest?(selector: string): SerializableNode | null;
 	getAttribute?(name: string): string | null;
+	remove?(): void;
+	querySelectorAll?(selector: string): ArrayLike<SerializableNode>;
 }
 
 interface SerializationContext {
-	images: Map<string, EmbeddedImage>;
+	images: EmbeddedImages;
 	sourceUrl: string;
 	usedIds: Set<string>;
 }
@@ -151,7 +174,8 @@ export async function createEpub(html: string, sourceUrl: string, options: EpubO
 
 	const source = new URL(sourceUrl);
 	const document = new DOMParser().parseFromString(html, 'text/html');
-	const fallbackRoot = document.querySelector('article, main, [role="main"]') ?? document.body;
+	const articleRoot = document.querySelector('article, main, [role="main"]');
+	const fallbackRoot = articleRoot ?? document.body;
 	const fallbackContent = fallbackRoot?.outerHTML ?? '';
 	const fallbackTitle = document.title.trim() || source.hostname;
 	const documentLanguage = document.documentElement.getAttribute('lang');
@@ -159,6 +183,10 @@ export async function createEpub(html: string, sourceUrl: string, options: EpubO
 	const base = document.createElement('base', undefined);
 	base.setAttribute('href', source.href);
 	document.head.append(base);
+
+	// Readability rewrites the document in place, and it drops the lead image because that sits outside
+	// the article body it selects, so the candidate has to be captured first.
+	const leadImage = findLeadImage(articleRoot, source.href);
 
 	const readable = new Readability(document, { charThreshold: 100, maxElemsToParse: MAX_DOM_ELEMENTS }).parse();
 	const content = readable?.content?.trim() || fallbackContent;
@@ -169,8 +197,12 @@ export async function createEpub(html: string, sourceUrl: string, options: EpubO
 	const language = normalizeLanguage(readable?.lang || documentLanguage);
 	const direction = readable?.dir === 'rtl' ? 'rtl' : 'ltr';
 	const articleDocument = new DOMParser().parseFromString(`<html><body>${content}</body></html>`, 'text/html');
-	const imageElements = Array.from(articleDocument.querySelectorAll('img')).filter(isSerializableNode);
+	const articleImages = Array.from(articleDocument.querySelectorAll('img')).filter(isSerializableNode);
+	const lead = insertLeadImage(articleDocument, leadImage, source.href, articleImages);
+	const imageElements = lead ? [lead.image, ...articleImages] : articleImages;
 	const images = await embedImages(imageElements, source.href, options.fetcher ?? fetch);
+	// An unfetchable lead image would otherwise leave an empty figure at the top of the article.
+	if (lead && !images.byElement.has(lead.image)) lead.figure.remove?.();
 	const articleBody = serializeChildren(articleDocument.body, { images, sourceUrl: source.href, usedIds: new Set() });
 	if (!articleBody.trim()) throw new Error('No readable content remained after sanitizing this page');
 
@@ -187,7 +219,7 @@ export async function createEpub(html: string, sourceUrl: string, options: EpubO
 	files['OEBPS/article.xhtml'] = strToU8(articleXhtml({ articleBody, direction, language, metadata, sourceUrl: source.href, title }));
 	files['OEBPS/styles.css'] = strToU8(STYLES);
 
-	for (const image of images.values()) {
+	for (const image of images.assets) {
 		files[`OEBPS/${image.path}`] = [image.data, { level: 0 }];
 	}
 
@@ -197,49 +229,215 @@ export async function createEpub(html: string, sourceUrl: string, options: EpubO
 	return epub;
 }
 
-async function embedImages(elements: SerializableNode[], sourceUrl: string, fetcher: typeof fetch): Promise<Map<string, EmbeddedImage>> {
-	const urls = elements.map((image) => getImageUrl(image, sourceUrl)).filter((url): url is string => url !== null);
-	const uniqueUrls = [...new Set(urls)].slice(0, MAX_IMAGE_ATTEMPTS);
-	const images = new Map<string, EmbeddedImage>();
+type ParsedDocument = Extract<ReturnType<DOMParser['parseFromString']>, { body: unknown }>;
+
+interface LeadImage {
+	alt: string;
+	urls: string[];
+}
+
+/**
+ * Finds the image a reader expects at the top of the article, such as a post hero, which Readability
+ * discards whenever it sits outside the body of copy.
+ */
+function findLeadImage(root: unknown, sourceUrl: string): LeadImage | null {
+	if (!isSerializableNode(root) || !root.querySelectorAll) return null;
+
+	const elements = root.querySelectorAll('img');
+	let inspected = 0;
+
+	for (let index = 0; index < Math.min(elements.length, MAX_LEAD_IMAGE_SCAN); index += 1) {
+		const candidate = elements[index];
+		if (!isSerializableNode(candidate)) continue;
+		if (candidate.getAttribute?.('aria-hidden')?.toLowerCase() === 'true') continue;
+		const identity = `${candidate.getAttribute?.('class') ?? ''} ${candidate.getAttribute?.('id') ?? ''}`;
+		if (NON_CONTENT_IMAGE.test(identity) || isBelowLeadImageSize(candidate)) continue;
+		// Readability was right to drop promos and related posts, so they must not return as the lead image.
+		if (candidate.closest?.(LEAD_IMAGE_EXCLUDED_REGIONS)) continue;
+
+		// Resolving candidate sources is the expensive step, so it carries the tighter budget.
+		inspected += 1;
+		if (inspected > MAX_LEAD_IMAGE_CANDIDATES) break;
+
+		// An empty list means every candidate source was a placeholder or an unsupported scheme.
+		const urls = getImageUrls(candidate, sourceUrl);
+		if (urls.length === 0) continue;
+
+		return { alt: candidate.getAttribute?.('alt')?.trim() ?? '', urls: urls.slice(0, MAX_IMAGE_ATTEMPTS_PER_ELEMENT) };
+	}
+
+	return null;
+}
+
+/** Treats an image as too small only when every dimension it declares is below the threshold. */
+function isBelowLeadImageSize(element: SerializableNode): boolean {
+	const dimensions = ['width', 'height']
+		.map((name) => element.getAttribute?.(name)?.trim())
+		.filter((value): value is string => /^\d+$/.test(value ?? ''))
+		.map(Number)
+		.filter((value) => value > 0);
+
+	return dimensions.length > 0 && dimensions.every((value) => value < MIN_LEAD_IMAGE_DIMENSION);
+}
+
+/**
+ * Collapses the resized variants of one asset onto a single key so that a header and a body copy of the
+ * same image are recognised as duplicates.
+ */
+function imageIdentity(url: string): string {
+	if (url.slice(0, 5).toLowerCase() === 'data:') return url;
+
+	try {
+		const parsed = new URL(url);
+		const proxied = parsed.searchParams.get('href') ?? parsed.searchParams.get('url') ?? parsed.searchParams.get('src');
+		return proxied ? `${parsed.origin}${parsed.pathname}?${proxied}` : `${parsed.origin}${parsed.pathname}`;
+	} catch {
+		return url;
+	}
+}
+
+function insertLeadImage(
+	articleDocument: ParsedDocument,
+	lead: LeadImage | null,
+	sourceUrl: string,
+	articleImages: SerializableNode[],
+): { figure: SerializableNode; image: SerializableNode } | null {
+	const [primary, second, third, fourth] = lead?.urls ?? [];
+	if (!primary) return null;
+
+	const wanted = new Set(lead?.urls.map(imageIdentity));
+	// Many sites keep the lead image inside the article, where Readability already preserved it.
+	for (const element of articleImages) {
+		for (const url of getImageUrls(element, sourceUrl)) {
+			if (wanted.has(imageIdentity(url))) return null;
+		}
+	}
+
+	const image = articleDocument.createElement('img', undefined);
+	// The attributes are chosen so that getImageUrls replays the candidates in their original order.
+	image.setAttribute('data-epub-src', primary);
+	if (second) image.setAttribute('data-src', second);
+	image.setAttribute('src', third ?? primary);
+	if (fourth) image.setAttribute('data-epub-fallback-src', fourth);
+	image.setAttribute('alt', lead?.alt ?? '');
+
+	const figure = articleDocument.createElement('figure', undefined);
+	figure.append(image);
+	articleDocument.body.prepend(figure);
+
+	return isSerializableNode(figure) && isSerializableNode(image) ? { figure, image } : null;
+}
+
+async function embedImages(elements: SerializableNode[], sourceUrl: string, fetcher: typeof fetch): Promise<EmbeddedImages> {
+	const images: EmbeddedImages = { assets: [], byElement: new WeakMap() };
+	const imagesByUrl = new Map<string, EmbeddedImage>();
+	const rejectedUrls = new Set<string>();
+	let attempts = 0;
 	let totalBytes = 0;
 
-	for (const url of uniqueUrls) {
-		const remainingBytes = MAX_TOTAL_IMAGE_BYTES - totalBytes;
-		if (remainingBytes <= 0 || images.size >= MAX_IMAGES) break;
+	for (const element of elements) {
+		let elementAttempts = 0;
+		for (const url of getImageUrls(element, sourceUrl)) {
+			const existingImage = imagesByUrl.get(url);
+			if (existingImage) {
+				images.byElement.set(element, existingImage);
+				break;
+			}
+			if (
+				rejectedUrls.has(url) ||
+				attempts >= MAX_IMAGE_ATTEMPTS ||
+				elementAttempts >= MAX_IMAGE_ATTEMPTS_PER_ELEMENT ||
+				images.assets.length >= MAX_IMAGES
+			)
+				continue;
 
-		try {
-			const response = await fetcher(url, {
-				headers: { Accept: 'image/png,image/jpeg,image/gif' },
-				redirect: 'follow',
-				signal: AbortSignal.timeout(10_000),
-			});
-			if (!response.ok) continue;
+			const remainingBytes = MAX_TOTAL_IMAGE_BYTES - totalBytes;
+			if (remainingBytes <= 0) continue;
+			attempts += 1;
+			elementAttempts += 1;
 
-			const limit = Math.min(MAX_IMAGE_BYTES, remainingBytes);
-			const contentLength = Number(response.headers.get('content-length'));
-			if (Number.isFinite(contentLength) && contentLength > limit) continue;
+			try {
+				const limit = Math.min(MAX_EMBEDDED_IMAGE_BYTES, remainingBytes);
+				let data: Uint8Array | null;
 
-			const data = await readBodyWithLimit(response.body, limit);
-			if (!data) continue;
+				if (url.slice(0, 5).toLowerCase() === 'data:') {
+					data = decodeDataImage(url, limit);
+				} else {
+					const response = await fetcher(url, {
+						headers: { Accept: 'image/png,image/jpeg,image/webp,image/gif;q=0.8,*/*;q=0.1' },
+						redirect: 'follow',
+						signal: AbortSignal.timeout(10_000),
+					});
+					if (!response.ok) {
+						rejectedUrls.add(url);
+						continue;
+					}
 
-			const type = detectImageType(data);
-			if (!type) continue;
+					const contentLength = Number(response.headers.get('content-length'));
+					if (Number.isFinite(contentLength) && contentLength > limit) {
+						rejectedUrls.add(url);
+						continue;
+					}
+					data = await readBodyWithLimit(response.body, limit);
+				}
 
-			const imageNumber = images.size + 1;
-			const image: EmbeddedImage = {
-				data,
-				extension: type.extension,
-				mediaType: type.mediaType,
-				path: `images/image-${imageNumber}.${type.extension}`,
-			};
-			images.set(url, image);
-			totalBytes += data.byteLength;
-		} catch {
-			// A blocked or unsupported image should not prevent delivery of the article text.
+				if (!data) {
+					rejectedUrls.add(url);
+					continue;
+				}
+
+				const type = detectImageType(data);
+				if (!type) {
+					rejectedUrls.add(url);
+					continue;
+				}
+
+				const imageNumber = images.assets.length + 1;
+				const image: EmbeddedImage = {
+					data,
+					extension: type.extension,
+					mediaType: type.mediaType,
+					path: `images/image-${imageNumber}.${type.extension}`,
+				};
+				images.assets.push(image);
+				images.byElement.set(element, image);
+				imagesByUrl.set(url, image);
+				totalBytes += data.byteLength;
+				break;
+			} catch {
+				rejectedUrls.add(url);
+				// A blocked or unsupported image should not prevent delivery of the article text.
+			}
 		}
 	}
 
 	return images;
+}
+
+function decodeDataImage(url: string, limit: number): Uint8Array | null {
+	const comma = url.indexOf(',');
+	if (comma < 0 || comma > 128) return null;
+
+	const metadata = url.slice(5, comma).split(';');
+	const mediaType = metadata.shift()?.toLowerCase();
+	if (!mediaType || !DATA_IMAGE_MEDIA_TYPES.has(mediaType) || !metadata.some((value) => value.toLowerCase() === 'base64')) return null;
+
+	const payload = url.slice(comma + 1);
+	if (payload.length > Math.min(MAX_DATA_IMAGE_PAYLOAD_CHARS, Math.ceil((limit * 4) / 3) + 4)) return null;
+
+	const encoded = payload.replace(/\s/g, '');
+	if (encoded.length % 4 === 1 || !/^[a-z0-9+/]*={0,2}$/i.test(encoded)) return null;
+
+	try {
+		const binary = atob(encoded);
+		if (binary.length > limit) return null;
+
+		const data = new Uint8Array(binary.length);
+		for (let index = 0; index < binary.length; index += 1) data[index] = binary.charCodeAt(index);
+		return data;
+	} catch {
+		return null;
+	}
 }
 
 function isSerializableNode(value: unknown): value is SerializableNode {
@@ -284,6 +482,13 @@ function detectImageType(data: Uint8Array): Pick<EmbeddedImage, 'extension' | 'm
 	if (data.length >= 6 && String.fromCharCode(...data.subarray(0, 6)).match(/^GIF8[79]a$/)) {
 		return { extension: 'gif', mediaType: 'image/gif' };
 	}
+	if (
+		data.length >= 12 &&
+		String.fromCharCode(...data.subarray(0, 4)) === 'RIFF' &&
+		String.fromCharCode(...data.subarray(8, 12)) === 'WEBP'
+	) {
+		return { extension: 'webp', mediaType: 'image/webp' };
+	}
 
 	return null;
 }
@@ -300,11 +505,7 @@ function serializeNode(node: SerializableNode, context: SerializationContext): s
 	if (BLOCKED_TAGS.has(tag)) return '';
 	if (!ALLOWED_TAGS.has(tag)) return serializeChildren(node, context);
 
-	if (tag === 'img') {
-		const imageUrl = getImageUrl(node, context.sourceUrl);
-		const image = imageUrl ? context.images.get(imageUrl) : undefined;
-		if (!image) return '';
-	}
+	if (tag === 'img' && !context.images.byElement.has(node)) return '';
 
 	const attributes = serializeAttributes(node, tag, context);
 	if (VOID_TAGS.has(tag)) return `<${tag}${attributes} />`;
@@ -312,7 +513,7 @@ function serializeNode(node: SerializableNode, context: SerializationContext): s
 	return `<${tag}${attributes}>${serializeChildren(node, context)}</${tag}>`;
 }
 
-function serializeAttributes(element: Pick<SerializableNode, 'getAttribute'>, tag: string, context: SerializationContext): string {
+function serializeAttributes(element: SerializableNode, tag: string, context: SerializationContext): string {
 	const get = (name: string) => element.getAttribute?.(name)?.trim() || null;
 	const attributes: Array<[string, string]> = [];
 	const id = get('id');
@@ -333,8 +534,7 @@ function serializeAttributes(element: Pick<SerializableNode, 'getAttribute'>, ta
 		if (href) attributes.push(['href', href]);
 	}
 	if (tag === 'img') {
-		const imageUrl = getImageUrl(element, context.sourceUrl);
-		const image = imageUrl ? context.images.get(imageUrl) : undefined;
+		const image = context.images.byElement.get(element);
 		if (image) attributes.push(['src', image.path]);
 		const alt = get('alt');
 		attributes.push(['alt', alt ?? '']);
@@ -361,28 +561,130 @@ function serializeAttributes(element: Pick<SerializableNode, 'getAttribute'>, ta
 	return attributes.map(([name, value]) => ` ${name}="${escapeXml(value)}"`).join('');
 }
 
-function getImageUrl(element: Pick<SerializableNode, 'getAttribute'>, sourceUrl: string): string | null {
-	const candidates = ['src', 'data-src', 'data-original', 'data-lazy-src']
+function getImageUrls(element: SerializableNode, sourceUrl: string): string[] {
+	const candidates: string[] = [];
+	const fallbackCandidates: string[] = [];
+	const picture = element.parentElement?.localName?.toLowerCase() === 'picture' ? element.parentElement : null;
+	const renderedSource = element.getAttribute?.('data-epub-src')?.trim();
+	if (renderedSource) candidates.push(renderedSource);
+	const lazyCandidates = ['data-src', 'data-original', 'data-lazy-src']
 		.map((name) => element.getAttribute?.(name)?.trim())
-		.filter((value): value is string => Boolean(value));
+		.filter((candidate): candidate is string => Boolean(candidate));
+	if (lazyCandidates[0]) candidates.push(lazyCandidates[0]);
 
-	const srcset = element.getAttribute?.('srcset') || element.getAttribute?.('data-srcset');
-	if (srcset && !srcset.startsWith('data:')) {
-		const srcsetCandidates = srcset.split(',');
-		const lastCandidate = srcsetCandidates[srcsetCandidates.length - 1]?.trim().split(/\s+/)[0];
-		if (lastCandidate) candidates.push(lastCandidate);
-	}
+	const responsiveCandidates: string[] = [];
 
-	for (const candidate of candidates) {
-		try {
-			const url = new URL(candidate, sourceUrl);
-			if (url.protocol === 'http:' || url.protocol === 'https:') return url.href;
-		} catch {
-			continue;
+	if (picture?.querySelectorAll) {
+		for (const source of Array.from(picture.querySelectorAll('source'))) {
+			const type = source.getAttribute?.('type')?.trim().toLowerCase();
+			const media = source.getAttribute?.('media')?.trim().toLowerCase();
+			if ((media && media !== 'all') || (type && !DATA_IMAGE_MEDIA_TYPES.has(type))) continue;
+
+			responsiveCandidates.push(...orderSrcsetCandidates(source.getAttribute?.('srcset') || source.getAttribute?.('data-srcset')));
 		}
 	}
 
-	return null;
+	responsiveCandidates.push(...orderSrcsetCandidates(element.getAttribute?.('srcset') || element.getAttribute?.('data-srcset')));
+	if (responsiveCandidates[0]) candidates.push(responsiveCandidates[0]);
+
+	const src = element.getAttribute?.('src')?.trim();
+	if (src) candidates.push(src);
+	const browserFallback = element.getAttribute?.('data-epub-fallback-src')?.trim();
+	if (browserFallback) candidates.push(browserFallback);
+	fallbackCandidates.push(...lazyCandidates.slice(1), ...responsiveCandidates.slice(1));
+	candidates.push(...fallbackCandidates);
+
+	const urls: string[] = [];
+	const seen = new Set<string>();
+	for (const candidate of candidates) {
+		let normalized: string | null = null;
+		if (hasSupportedDataImageHeader(candidate)) normalized = candidate;
+
+		if (!normalized) {
+			try {
+				const url = new URL(candidate, sourceUrl);
+				if (url.protocol === 'http:' || url.protocol === 'https:') normalized = url.href;
+			} catch {
+				continue;
+			}
+		}
+
+		if (normalized && !seen.has(normalized)) {
+			seen.add(normalized);
+			urls.push(normalized);
+		}
+	}
+
+	return urls;
+}
+
+function hasSupportedDataImageHeader(value: string): boolean {
+	if (value.slice(0, 11).toLowerCase() !== 'data:image/') return false;
+
+	const comma = value.indexOf(',');
+	if (comma < 0 || comma > 128) return false;
+
+	const metadata = value.slice(5, comma).split(';');
+	const mediaType = metadata.shift()?.toLowerCase();
+	return Boolean(mediaType && DATA_IMAGE_MEDIA_TYPES.has(mediaType) && metadata.some((part) => part.toLowerCase() === 'base64'));
+}
+
+function orderSrcsetCandidates(value: string | null | undefined): string[] {
+	if (!value) return [];
+
+	const candidates: Array<{ density?: number; url: string; width?: number }> = [];
+	let position = 0;
+
+	while (position < value.length) {
+		while (position < value.length && /[\s,]/.test(value[position])) position += 1;
+		const urlStart = position;
+		while (position < value.length && !/\s/.test(value[position])) position += 1;
+
+		let url = value.slice(urlStart, position);
+		if (!url) break;
+
+		let descriptor = '';
+		if (url.endsWith(',')) {
+			url = url.replace(/,+$/, '');
+		} else {
+			while (position < value.length && /\s/.test(value[position])) position += 1;
+			const descriptorStart = position;
+			while (position < value.length && value[position] !== ',') position += 1;
+			descriptor = value.slice(descriptorStart, position).trim();
+		}
+		if (value[position] === ',') position += 1;
+
+		if (!url || descriptor.split(/\s+/).filter(Boolean).length > 1) continue;
+		const widthMatch = descriptor.match(/^(\d+)w$/);
+		const densityMatch = descriptor.match(/^(\d*\.?\d+)x$/);
+		if (descriptor && !widthMatch && !densityMatch) continue;
+
+		const width = widthMatch ? Number(widthMatch[1]) : undefined;
+		const density = densityMatch ? Number(densityMatch[1]) : undefined;
+		if (width !== undefined && width <= 0) continue;
+		if (density !== undefined && density <= 0) continue;
+		candidates.push({ url, width, density });
+	}
+
+	const widths = candidates.filter((candidate): candidate is typeof candidate & { width: number } => candidate.width !== undefined);
+	if (widths.length) {
+		const suitable = widths.filter((candidate) => candidate.width <= MAX_RESPONSIVE_IMAGE_WIDTH);
+		const oversized = widths.filter((candidate) => candidate.width > MAX_RESPONSIVE_IMAGE_WIDTH);
+		const remaining = candidates.filter((candidate) => candidate.width === undefined);
+		return [
+			...suitable.sort((left, right) => right.width - left.width),
+			...oversized.sort((left, right) => left.width - right.width),
+			...remaining,
+		].map((candidate) => candidate.url);
+	}
+
+	const densities = candidates.map((candidate) => ({ ...candidate, density: candidate.density ?? 1 }));
+	const suitable = densities.filter((candidate) => candidate.density <= 2);
+	const oversized = densities.filter((candidate) => candidate.density > 2);
+	return [
+		...suitable.sort((left, right) => right.density - left.density),
+		...oversized.sort((left, right) => left.density - right.density),
+	].map((candidate) => candidate.url);
 }
 
 function getSafeLink(value: string | null, sourceUrl: string): string | null {
@@ -431,17 +733,16 @@ function contentOpf({
 	title,
 	byline,
 }: {
-	images: Map<string, EmbeddedImage>;
+	images: EmbeddedImages;
 	language: string;
 	modified: string;
 	sourceUrl: string;
 	title: string;
 	byline?: string | null;
 }): string {
-	const imageManifest = Array.from(
-		images.values(),
-		(image, index) => `    <item id="image-${index + 1}" href="${escapeXml(image.path)}" media-type="${image.mediaType}" />`,
-	).join('\n');
+	const imageManifest = images.assets
+		.map((image, index) => `    <item id="image-${index + 1}" href="${escapeXml(image.path)}" media-type="${image.mediaType}" />`)
+		.join('\n');
 	const creator = byline ? `\n    <dc:creator>${escapeXml(byline)}</dc:creator>` : '';
 
 	return `<?xml version="1.0" encoding="UTF-8"?>

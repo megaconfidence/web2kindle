@@ -2,7 +2,7 @@ export const ARTICLE_FORMATS = ['epub', 'pdf'] as const;
 
 export type ArticleFormat = (typeof ARTICLE_FORMATS)[number];
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 export async function getArticleCacheKey(url: string, format: ArticleFormat): Promise<string> {
 	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(url));
