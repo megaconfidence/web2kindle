@@ -13,7 +13,16 @@
 		"directory": "./public"
 	},
 	"observability": {
-		"enabled": true
+		"enabled": true,
+		"head_sampling_rate": 1,
+		"logs": {
+			"enabled": true
+		},
+		// Enabled explicitly: "enabled": true on its own only turns on logs, not traces.
+		// Traces auto-instrument the fetch, KV, and binding calls this render pipeline fans out to.
+		"traces": {
+			"enabled": true
+		}
 	},
 	"secrets": {
 		"required": ["RESEND_KEY", "FROM_EMAIL"]
