@@ -5,12 +5,120 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Web2Kindle</title>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+		<style>
+			:root {
+				--brand: #4f46e5;
+				--ink: 15, 23, 42;
+			}
+			html {
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+			}
+			/* Popups size to their content, and this build of Tailwind has no arbitrary values. */
+			body {
+				width: 360px;
+			}
+			h1 {
+				text-wrap: balance;
+			}
+			p {
+				text-wrap: pretty;
+			}
+
+			.field {
+				transition-property: border-color, box-shadow;
+				transition-duration: 150ms;
+				transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+			}
+			.field:focus {
+				outline: none;
+				border-color: var(--brand);
+				box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.16);
+			}
+
+			.btn {
+				transition-property: background-color, box-shadow, transform;
+				transition-duration: 150ms;
+				transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+			}
+			.btn-primary {
+				box-shadow:
+					0 1px 2px rgba(var(--ink), 0.1),
+					0 4px 12px -2px rgba(79, 70, 229, 0.4);
+			}
+			.btn:active:not(:disabled) {
+				transform: scale(0.96);
+			}
+			.btn:focus {
+				outline: none;
+			}
+			.btn:focus-visible,
+			.link:focus-visible {
+				outline: none;
+				box-shadow:
+					0 0 0 2px #fff,
+					0 0 0 4px var(--brand);
+			}
+			.btn:disabled {
+				cursor: progress;
+				opacity: 0.75;
+			}
+			.link {
+				border-radius: 4px;
+			}
+			.link:focus {
+				outline: none;
+			}
+
+			/* Keeps a 40px hit area around a visually small control. */
+			.icon-btn::after {
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 40px;
+				height: 40px;
+				transform: translate(-50%, -50%);
+			}
+
+			.spinner {
+				animation: spin 0.6s linear infinite;
+			}
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			/* Storage reads are async, so the tip starts hidden and fades in rather than flashing away. */
+			.fade-in {
+				animation: fade-in 0.18s cubic-bezier(0.2, 0, 0, 1) both;
+			}
+			@keyframes fade-in {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.fade-in,
+				.spinner {
+					animation: none;
+				}
+				.btn:active:not(:disabled) {
+					transform: none;
+				}
+			}
+		</style>
 	</head>
-	<body class="bg-gray-50">
-		<div class="max-w-[600px] mx-auto p-4">
+	<body class="bg-gray-50 text-gray-900">
+		<main class="p-4">
 			<!-- Header -->
-			<div class="flex items-center space-x-2 mb-6">
-				<svg class="w-6 h-6" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+			<div class="flex items-center space-x-2 mb-5">
+				<svg class="w-6 h-6" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 					<rect x="20" y="10" width="60" height="80" rx="4" fill="#4F46E5" />
 					<rect x="25" y="15" width="50" height="65" rx="2" fill="#ffffff" />
 					<circle cx="50" cy="40" r="15" fill="none" stroke="#4F46E5" stroke-width="3" />
@@ -18,18 +126,20 @@
 					<path d="M40 33 Q50 48 60 33" fill="none" stroke="#4F46E5" stroke-width="2" />
 					<path d="M50 55 L50 70 L60 65 L50 70 L40 65" fill="#4F46E5" stroke="#4F46E5" stroke-width="2" />
 				</svg>
-				<h1 class="text-lg font-semibold text-gray-900">Web2Kindle</h1>
+				<h1 class="text-lg font-semibold tracking-tight">Web2Kindle</h1>
 			</div>
 
 			<!-- Form -->
-			<form id="sendToKindleForm" class="space-y-4">
+			<form id="sendToKindleForm" class="space-y-4" novalidate>
 				<div>
 					<label for="url" class="block text-sm font-medium text-gray-700 mb-1">Current Page URL</label>
 					<input
 						type="url"
 						id="url"
+						name="url"
 						required
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+						spellcheck="false"
+						class="field w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
 					/>
 				</div>
 
@@ -38,58 +148,77 @@
 					<input
 						type="email"
 						id="kindle-email"
+						name="email"
 						required
+						autocomplete="email"
+						spellcheck="false"
 						placeholder="your-kindle@kindle.com"
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm mb-2"
+						class="field w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
 					/>
-					<div class="bg-blue-50 p-3 rounded-md">
-						<p class="text-xs text-blue-800">
-							⚠️ First time setup: Add "confidence@megaconfidence.me" to your
+					<div id="setup-banner" class="mt-2 flex items-start bg-blue-50 rounded-md py-2 pl-3 pr-2" hidden>
+						<p class="flex-1 text-xs leading-5 text-blue-900">
+							<span class="font-semibold">First-time setup:</span> add <span class="font-medium">web2kindle@confidence.sh</span> to your
 							<a
 								href="https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H"
-								class="text-blue-600 hover:text-blue-800 underline"
+								class="link font-medium underline text-blue-700 hover:text-blue-900"
 								target="_blank"
 								rel="noopener noreferrer"
-							>
-								Kindle approved email list
-							</a>
+								>Kindle approved email list</a
+							>.
 						</p>
+						<button
+							type="button"
+							id="dismiss-setup"
+							class="btn icon-btn relative flex-shrink-0 ml-2 p-1 rounded text-blue-500 hover:text-blue-900 hover:bg-blue-100"
+							aria-label="Dismiss first-time setup tip"
+						>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
 					</div>
+					<button type="button" id="setup-help" class="btn mt-2 text-xs text-gray-500 hover:text-gray-800 rounded" hidden>
+						Show first-time setup tip
+					</button>
 				</div>
 
 				<div>
 					<label for="format" class="block text-sm font-medium text-gray-700 mb-1">Format</label>
-					<select
-						id="format"
-						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-					>
+					<select id="format" name="format" class="field w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
 						<option value="epub" selected>EPUB (recommended)</option>
 						<option value="pdf">PDF (original layout)</option>
 					</select>
-					<p class="mt-1 text-xs text-gray-500">EPUB adapts to your Kindle's font and layout settings.</p>
+					<p id="format-hint" class="mt-1 text-xs text-gray-500">EPUB adapts to your Kindle's font and layout settings.</p>
 				</div>
 
 				<button
 					type="submit"
-					class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm font-medium"
+					id="submit-button"
+					class="btn btn-primary w-full inline-flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 text-sm font-medium"
 				>
-					Send to Kindle
+					<svg id="submit-spinner" class="spinner h-4 w-4 mr-2 hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+						<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle>
+						<path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+					</svg>
+					<span id="submit-label">Send to Kindle</span>
 				</button>
 			</form>
 
 			<!-- Status Message -->
-			<div id="message" class="mt-4 text-center hidden">
+			<div id="message" class="mt-4 text-center hidden" role="status" aria-live="polite">
 				<p id="messageText" class="text-sm"></p>
 			</div>
 
 			<!-- Footer -->
 			<div class="mt-4 pt-4 border-t border-gray-200">
 				<div class="flex justify-between items-center text-xs text-gray-500">
-					<a href="https://github.com/megaconfidence/web2kindle" target="_blank" class="hover:text-gray-700"> Open Source on GitHub </a>
-					<span>v1.1.0</span>
+					<a href="https://github.com/megaconfidence/web2kindle" target="_blank" rel="noopener noreferrer" class="link hover:text-gray-800"
+						>Open Source on GitHub</a
+					>
+					<span id="version">v1.2.0</span>
 				</div>
 			</div>
-		</div>
+		</main>
 		<script src="extension.js"></script>
 	</body>
 </html>

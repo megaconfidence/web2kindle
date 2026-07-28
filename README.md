@@ -36,7 +36,7 @@ Transform any web article into a clean, reflowable Kindle ebook with one click. 
 ## Installation 🔧
 
 1. Install from [Chrome Web Store](https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk) or [Firefox Addons](https://addons.mozilla.org/en-US/firefox/addon/web2kindle/)
-2. Add `confidence@megaconfidence.me` to your [Kindle Approved Email List](https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H)
+2. Add `web2kindle@confidence.sh` to your [Kindle Approved Email List](https://www.amazon.com/gp/help/customer/display.html?nodeId=GX9XLEVV8G4DB28H)
 3. Click the extension icon on any webpage you want to read on your Kindle
 
 ## How It Works 🛠️
@@ -76,7 +76,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ## Support 💬
 
 - [Open an issue](https://github.com/megaconfidence/web2kindle/issues)
-- [Email support](mailto:confidence@megaconfidence.me)
+- [Email support](mailto:web2kindle@confidence.sh)
 - [Documentation](https://github.com/megaconfidence/web2kindle/README.md)
 
 ## Privacy 🔒
@@ -91,4 +91,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Made with ❤️ by [Confidence Okoghenun](https://github.com/megaconfidence)
 
-[Website](https://web2kindle.megaconfidence.me/) · [Chrome Web Store](https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk) · [Report Bug](https://github.com/megaconfidence/web2kindle/issues) · [Request Feature](https://github.com/megaconfidence/web2kindle/issues)
+[Website](https://web2kindle.confidence.sh/) · [Chrome Web Store](https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk) · [Report Bug](https://github.com/megaconfidence/web2kindle/issues) · [Request Feature](https://github.com/megaconfidence/web2kindle/issues)

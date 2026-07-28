@@ -24,8 +24,7 @@
 	"kv_namespaces": [
 		{
 			"binding": "ARTICLE_CACHE",
-			"preview_id": "6bf13148972e418f999a9c4905755709",
-			"id": "606efc9a67704eba877ed1dafbf4f1f9"
+			"id": "7a1a3ec9b4e643308c1fbe55482a1d4c"
 		}
 	],
 	"durable_objects": {
@@ -39,7 +38,7 @@
 	"migrations": [
 		{
 			"tag": "v1",
-			"new_classes": ["BrowserController"]
+			"new_sqlite_classes": ["BrowserController"]
 		}
 	],
 	"workflows": [

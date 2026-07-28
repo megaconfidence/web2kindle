@@ -6,6 +6,9 @@ rm -rf extension extension.zip
 cp -r public extension
 cd extension
 
+# macOS sprinkles these through the tree and they would otherwise ship to the stores.
+find . -name '.DS_Store' -delete
+
 declare -A scripts0=(
     [file]='tailwind.css'
     [url]='https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css'
@@ -13,8 +16,12 @@ declare -A scripts0=(
 
 declare -n scripts
 for scripts  in ${!scripts@}; do
-  curl ${scripts[url]} -o ${scripts[file]}
-  sed -i"" -e "s|${scripts[url]}|${scripts[file]}|g" extension.html
+  # Fail the build rather than packaging an error page as the stylesheet.
+  curl -fsSL "${scripts[url]}" -o "${scripts[file]}"
+  # Written through a temp file because BSD and GNU sed disagree about in-place editing,
+  # which used to leave an "extension.html-e" backup inside the published zip.
+  sed "s|${scripts[url]}|${scripts[file]}|g" extension.html > extension.html.tmp
+  mv extension.html.tmp extension.html
 done
 
 zip -r extension.zip *
